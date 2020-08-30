@@ -665,6 +665,7 @@ KBUILD_CFLAGS	+= -O2
 else
 ifeq ($(cc-name),clang)
 KBUILD_CFLAGS	+= -O3
+KBUILD_CFLAGS	+= -mcpu=cortex-a53 -mtune=cortex-a53
 else
 KBUILD_CFLAGS   += -O2
 endif
