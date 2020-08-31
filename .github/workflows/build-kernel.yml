@@ -1,0 +1,61 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Build Kernel
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the regression2 branch
+on:
+  push:
+    branches: [ flicker-free ]
+  pull_request:
+    branches: [ flicker-free ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # Runs a single command using the runners shell
+      - name: Install Packages
+        run: |
+          sudo apt update && sudo apt -y dist-upgrade
+          sudo apt install -y gcc g++ python make texinfo texlive bc bison build-essential ccache curl flex g++-multilib gcc-multilib \
+          git gnupg gperf imagemagick lib32ncurses5-dev lib32readline-dev lib32z1-dev liblz4-tool libncurses5-dev libsdl1.2-dev \
+          libssl-dev libwxgtk3.0-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev \
+          unzip language-pack-zh-hans bc gzip
+
+      # Runs a set of commands using the runners shell
+      - name: Download buildtools
+        run: |
+          cd ~
+          wget https://dl.akr-developers.com/?file=CBL/Candy_clang-20200823.tar.zst
+          mkdir cbl
+          tar -I zstd -xvf Candy_clang-20200823.tar.zst -C cbl
+          
+      - name: Build With Shell
+        run: |
+            cd ${GITHUB_WORKSPACE}
+            args="-j$(nproc --all) \
+            O=out \
+            ARCH=arm64 \
+            CLANG_TRIPLE=aarch64-linux-gnu- \
+            CROSS_COMPILE=${HOME}/cbl/bin/aarch64-linux-gnu- \
+            CC=${HOME}/cbl/bin/clang \
+            LD=${HOME}/cbl/bin/ld.lld \
+            AR=${HOME}/cbl/bin/llvm-ar \
+            NM=${HOME}/cbl/bin/llvm-nm \
+            OBJCOPY=${HOME}/cbl/bin/llvm-objcopy \
+            OBJDUMP=${HOME}/cbl/bin/llvm-objdump \
+            STRIP=${HOME}/cbl/bin/llvm-strip \
+            CROSS_COMPILE_ARM32=${HOME}/cbl/bin/arm-linux-gnueabi- "
+            make clean
+            make mrproper
+            make ${args} weeb_defconfig
+            make ${args}
