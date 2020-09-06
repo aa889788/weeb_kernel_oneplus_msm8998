@@ -55,8 +55,16 @@ jobs:
             make ${args} weeb_defconfig
             make ${args}
 
-      - name: Upload Image.gz-dtb
+      - name: Package with Anykernel3
+        run: |
+            cd ~
+            git clone https://github.com/aa889788/AnyKernel3.git -b OOS-OP5
+            cd AnyKernel3
+            cp -f ${GITHUB_WORKSPACE}/out/arch/arm64/boot/Image.gz-dtb ./
+            zip -r9 OOS-OP5-5T-flikerfree.zip * -x .git pack.sh README.md *placeholder
+
+      - name: Upload OOS-OP5-5T-flikerfree.zip
         uses: actions/upload-artifact@v2
         with:
-          name: Image.gz-dtb
-          path: ${{ github.workspace }}/out/arch/arm64/boot/Image.gz-dtb
+          name: OOS-OP5-5T-flikerfree.zip
+          path: ~/AnyKernel3/OOS-OP5-5T-flikerfree.zip
