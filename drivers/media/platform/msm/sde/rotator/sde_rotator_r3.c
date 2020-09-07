@@ -1,4 +1,4 @@
-/* Copyright (c) 2015-2017, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2015-2017, 2020, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -49,6 +49,8 @@
 /* Macro for constructing the REGDMA command */
 #define SDE_REGDMA_WRITE(p, off, data) \
 	do { \
+		SDEROT_DBG("SDEREG.W:[%s:0x%X] <= 0x%X\n", #off, (off),\
+				(u32)(data));\
 		writel_relaxed( \
 				(REGDMA_OP_REGWRITE | \
 				 ((off) & REGDMA_ADDR_OFFSET_MASK)), \
@@ -60,6 +62,8 @@
 
 #define SDE_REGDMA_MODIFY(p, off, mask, data) \
 	do { \
+		SDEROT_DBG("SDEREG.M:[%s:0x%X] <= 0x%X\n", #off, (off),\
+				(u32)(data));\
 		writel_relaxed( \
 				(REGDMA_OP_REGMODIFY | \
 				 ((off) & REGDMA_ADDR_OFFSET_MASK)), \
@@ -73,6 +77,8 @@
 
 #define SDE_REGDMA_BLKWRITE_INC(p, off, len) \
 	do { \
+		SDEROT_DBG("SDEREG.B:[%s:0x%X:0x%X]\n", #off, (off),\
+				(u32)(len));\
 		writel_relaxed( \
 				(REGDMA_OP_BLKWRITE_INC | \
 				 ((off) & REGDMA_ADDR_OFFSET_MASK)), \
@@ -84,6 +90,7 @@
 
 #define SDE_REGDMA_BLKWRITE_DATA(p, data) \
 	do { \
+		SDEROT_DBG("SDEREG.I:[:] <= 0x%X\n", (u32)(data));\
 		writel_relaxed(data, p); \
 		p += sizeof(u32); \
 	} while (0)
@@ -2606,13 +2613,13 @@ int sde_rotator_r3_init(struct sde_rot_mgr *mgr)
 	} else {
 		for (i = 0; i < SDE_HW_ROT_REGDMA_TOTAL_CTX; i++)
 			rot->cmd_wr_ptr[ROT_QUEUE_HIGH_PRIORITY][i] =
-				   rot->mdss_base +
+				rot->mdss_base +
 					REGDMA_RAM_REGDMA_CMD_RAM +
 					SDE_HW_ROT_REGDMA_SEG_SIZE * 4 * i;
 
 		for (i = 0; i < SDE_HW_ROT_REGDMA_TOTAL_CTX; i++)
 			rot->cmd_wr_ptr[ROT_QUEUE_LOW_PRIORITY][i] =
-				   rot->mdss_base +
+				rot->mdss_base +
 					REGDMA_RAM_REGDMA_CMD_RAM +
 					SDE_HW_ROT_REGDMA_SEG_SIZE * 4 *
 					(i + SDE_HW_ROT_REGDMA_TOTAL_CTX);
